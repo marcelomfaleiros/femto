@@ -29,17 +29,17 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.setObjectName("General Femto")
         self.setupUi(self)
 
-        self.init_pos_lineEdit.setText("10")
+        self.init_pos_lineEdit.setText("-100")
         self.fin_pos_lineEdit.setText("200")
-        self.step_lineEdit.setText("110")
+        self.step_lineEdit.setText("10")
                         
         self.init_pushButton.clicked.connect(self.initialization)
-        #self.one_fs_pushButton.clicked.connect()
-        #self.five_fs_pushButton.clicked.connect()
-        #self.ten_fs_pushButton.clicked.connect()
-        #self.twenty_fs_pushButton.clicked.connect()
-        #self.set_zero_pushButton.clicked.connect()
-        #self.move_to_pushButton.clicked.connect()
+        self.one_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(1))
+        self.five_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5))
+        self.ten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(10))
+        self.twenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(20))
+        self.set_zero_pushButton.clicked.connect(self.zero_delay)
+        self.move_to_pushButton.clicked.connect(self.move_stage_mm)
         self.start_pushButton.clicked.connect(self.measure)
         self.save_pushButton.clicked.connect(self.save)
         self.clear_pushButton.clicked.connect(self.clear)
@@ -54,23 +54,21 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
 
     def initialization(self):
         #initialize stage
-        self.shutter = tl.ThorlabsSC10()                        #set up thorlabs shutter
-        self.shutter.rs232_set_up('COM5')
-        if self.shutter.id() == 'THORLABS SC10 VERSION 1.07':
-            self.initialize_label.setText("Homed: position = " + str(initialize_pos)
-                                          + '\nTHORLABS SC10 VERSION 1.07 - OK')
+        smc = smc100.SMC100CC()
+        smc.rs232_set_up()
+
         #initialize lock-in amplifier
         
         self.graph_start_up()
 
     def zero_delay(self):        
-        #self.zero = self.stage.status["position"]
-        self.zero_pos_mm = self.zero/20000
-        self.set_zero_delay_label.setText("Zero delay = " + str(self.zero_pos_mm) + " mm")
+        self.zero = self.smc.current_position()
+        #self.zero_pos_mm = self.zero/20000
+        #self.set_zero_delay_label.setText("Zero delay = " + str(self.zero_pos_mm) + " mm")
         return self.zero      
 
     def move_stage_rel(self, step_fs):
-        pass 
+        self.smc.move_rel_fs(step_fs) 
 
     def move_stage_mm(self):
         pass
