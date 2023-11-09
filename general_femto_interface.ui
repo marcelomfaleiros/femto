@@ -143,9 +143,15 @@ selection-color: rgb(255, 255, 255);
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QPushButton" name="one_fs_pushButton">
+            <property name="minimumSize">
+             <size>
+              <width>40</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -166,10 +172,16 @@ selection-color: rgb(255, 255, 255);
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="mone_fs_pushButton">
+            <property name="minimumSize">
+             <size>
+              <width>40</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -191,9 +203,15 @@ selection-color: rgb(255, 255, 255);
           </item>
           <item>
            <widget class="QPushButton" name="five_fs_pushButton">
+            <property name="minimumSize">
+             <size>
+              <width>40</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -214,10 +232,16 @@ selection-color: rgb(255, 255, 255);
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="mfive_fs_pushButton">
+            <property name="minimumSize">
+             <size>
+              <width>40</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -239,9 +263,15 @@ selection-color: rgb(255, 255, 255);
           </item>
           <item>
            <widget class="QPushButton" name="ten_fs_pushButton">
+            <property name="minimumSize">
+             <size>
+              <width>40</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -262,10 +292,16 @@ selection-color: rgb(255, 255, 255);
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="mten_fs_pushButton">
+            <property name="minimumSize">
+             <size>
+              <width>40</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -287,9 +323,15 @@ selection-color: rgb(255, 255, 255);
           </item>
           <item>
            <widget class="QPushButton" name="twenty_fs_pushButton">
+            <property name="minimumSize">
+             <size>
+              <width>40</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -310,10 +352,16 @@ selection-color: rgb(255, 255, 255);
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_4">
+           <widget class="QPushButton" name="mtwenty_fs_pushButton">
+            <property name="minimumSize">
+             <size>
+              <width>40</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -344,7 +392,7 @@ selection-color: rgb(255, 255, 255);
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color: rgb(255, 200, 85);</string>
+             <string notr="true">background-color: rgb(255, 102, 88);</string>
             </property>
             <property name="text">
              <string>Set zero delay</string>
@@ -371,10 +419,53 @@ selection-color: rgb(255, 255, 255);
           </item>
           <item>
            <widget class="QLineEdit" name="move_to_lineEdit">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
               <width>100</width>
               <height>16777215</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(255, 255, 255);</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton">
+            <property name="minimumSize">
+             <size>
+              <width>60</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(213, 218, 255);</string>
+            </property>
+            <property name="text">
+             <string>Delay (fs)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
              </size>
             </property>
             <property name="styleSheet">
@@ -478,6 +569,24 @@ selection-color: rgb(255, 255, 255);
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPushButton" name="freerun_pushButton">
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>11</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(153, 255, 196);</string>
+            </property>
+            <property name="text">
+             <string>Free run</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QPushButton" name="start_pushButton">
             <property name="font">

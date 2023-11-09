@@ -32,12 +32,18 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.init_pos_lineEdit.setText("-100")
         self.fin_pos_lineEdit.setText("200")
         self.step_lineEdit.setText("10")
+        self.move_to_lineEdit.setText("100")
                         
         self.init_pushButton.clicked.connect(self.initialization)
+        self.freerun_pushButton.clicked.connect(self.intensity)
         self.one_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(1))
+        self.mone_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-1))
         self.five_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5))
+        self.mfive_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-5))
         self.ten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(10))
+        self.mten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-10))
         self.twenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(20))
+        self.mtwenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-20))
         self.set_zero_pushButton.clicked.connect(self.zero_delay)
         self.move_to_pushButton.clicked.connect(self.move_stage_mm)
         self.start_pushButton.clicked.connect(self.measure)
@@ -71,16 +77,16 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.smc.move_rel_fs(step_fs) 
 
     def move_stage_mm(self):
-        pass
+        #read position from interface
+        target_position_mm = float(self.move_to_lineEdit.text())
+        self.smc.move_abs_mm(target_position_mm)
 
     def move_stage_fs(self, position_fs):
         pass
 
-    def intensity(self):    
-        pass
-
-    def alignment(self, integ_time):
-        pass      
+    def intensity(self):  
+        #point from lock-in amplifier  
+        pass     
 
     def measure(self):
         pass
