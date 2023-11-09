@@ -13,7 +13,7 @@ import numpy as np
 import time
 import keyboard
 
-class GeneralFemto(qtw.QMainWindow, Ui_MainWindow):
+class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     '''
     
     Usage
@@ -22,27 +22,28 @@ class GeneralFemto(qtw.QMainWindow, Ui_MainWindow):
     import time
 
     '''
-
-    ta_array = []
-    wl_array = []
-    delay_array = []
-    dynamics_array = []
-    deltaO_array = []
            
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setObjectName("Transient Absorption")
+        self.setObjectName("General Femto")
         self.setupUi(self)
 
-        self.strt_inttime_lineEdit.setText("10")
-        self.strt_delay_lineEdit.setText("200")
-        self.arb_move_lineEdit.setText("110")
+        self.init_pos_lineEdit.setText("10")
+        self.fin_pos_lineEdit.setText("200")
+        self.step_lineEdit.setText("110")
                         
-        self.start_pushButton.clicked.connect(self.initialization)
-        self.save_pushButton.clicked.connect(self.zero_delay)
-        self.clear_pushButton.clicked.connect(self.alignment)
-        self.exit_pushButton.clicked.connect(self.open_ta_window)
+        self.init_pushButton.clicked.connect(self.initialization)
+        #self.one_fs_pushButton.clicked.connect()
+        #self.five_fs_pushButton.clicked.connect()
+        #self.ten_fs_pushButton.clicked.connect()
+        #self.twenty_fs_pushButton.clicked.connect()
+        #self.set_zero_pushButton.clicked.connect()
+        #self.move_to_pushButton.clicked.connect()
+        self.start_pushButton.clicked.connect(self.measure)
+        self.save_pushButton.clicked.connect(self.save)
+        self.clear_pushButton.clicked.connect(self.clear)
+        self.exit_pushButton.clicked.connect(self.exit)
 
     def graph_start_up(self):
         self.graphicsView.showGrid(x=True, y=True, alpha=True)
@@ -83,6 +84,9 @@ class GeneralFemto(qtw.QMainWindow, Ui_MainWindow):
     def alignment(self, integ_time):
         pass      
 
+    def measure(self):
+        pass
+
     def save(self, mode=str):
         if mode == 'transient_spectrum':
             raw_ta_array = np.vstack(TransientAbsorption.ta_array)
@@ -101,14 +105,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_MainWindow):
     def exit(self):       
         self.close()
 
-    def clear(self):
-        self.ta_dyn_graphicsView.clear()
-
-    def exit(self):
-        self.close()
-
 if __name__ == '__main__':
     app = qtw.QApplication([])
-    tela = TransientAbsorption()
+    tela = GeneralFemto()
     tela.show()
     app.exec_()
