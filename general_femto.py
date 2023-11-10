@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-# revisão 07/11/2023
+
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas, Brazil
+
+"""
 
 import sys
 import os
@@ -12,6 +17,34 @@ import newport_smc100cc as smc100
 import numpy as np
 import time
 import keyboard
+
+class Worker(QThread):
+    signal = pyqtSignal(object)
+    finished = pyqtSignal()
+    
+    def run(self, mode = str):
+        self.spec.integration_time_micros(self.int_time) 
+        t_array = [round(i * self.tstep, 2) for i in range(self.n_spectra + 1)]
+        t_array = np.array(t_array)
+        self.t_string = np.array2string(t_array, precision=2, separator=' ', suppress_small=True)
+        
+        for i in t_array:
+            if keyboard.is_pressed('Escape'):
+                break             
+            x = self.spec.wavelengths()
+            rounded_x = np.round(x, decimals = 2)
+            y = self.spec.intensities(correct_dark_counts = True, correct_nonlinearity = False)
+            self.data = (rounded_x, y)
+            self.data = np.asarray(self.data, dtype=None, order=None)
+            self.signal.emit(self.data)
+            if i == 0:
+                self.spec_array = (rounded_x, y)
+            else:
+                self.spec_array = np.vstack((self.spec_array, y))
+
+            sleep(self.tstep)
+
+        self.finished.emit()
 
 class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     '''
@@ -28,6 +61,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
 
         self.setObjectName("General Femto")
         self.setupUi(self)
+
+        self.thread = Worker()
 
         self.init_pos_lineEdit.setText("-100")
         self.fin_pos_lineEdit.setText("200")
@@ -89,7 +124,24 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         pass     
 
     def measure(self):
-        pass
+        self.thread.int_time = int(self.intTime_lineEdit.text()) * 1000
+        self.thread.n_spectra = int(self.num_spectra_lineEdit.text())
+        self.thread.tstep = float(self.time_step_lineEdit.text())
+        self.thread.signal.connect(self.plot)
+        self.thread.start()
+
+        self.measure_pushButton.setEnabled(False)
+        self.freeRun_pushButton.setEnabled(False)
+        self.save_pushButton.setEnabled(False)
+        self.clear_pushButton.setEnabled(False)
+        self.thread.finished.connect(lambda: self.measure_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.freeRun_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.save_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.clear_pushButton.setEnabled(True))
+
+    def plot(self, data):
+        self.graphicsView.plot(data[0], data[1], clear=False)
+        pg.QtWidgets.QApplication.processEvents()
 
     def save(self, mode=str):
         if mode == 'transient_spectrum':
