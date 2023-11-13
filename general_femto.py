@@ -23,7 +23,9 @@ class Worker(QThread):
     finished = pyqtSignal()
     
     def run(self, mode = str):
-        self.spec.integration_time_micros(self.int_time) 
+
+        intensity_array = []
+        
         t_array = [round(i * self.tstep, 2) for i in range(self.n_spectra + 1)]
         t_array = np.array(t_array)
         self.t_string = np.array2string(t_array, precision=2, separator=' ', suppress_small=True)
@@ -31,16 +33,15 @@ class Worker(QThread):
         for i in t_array:
             if keyboard.is_pressed('Escape'):
                 break             
-            x = self.spec.wavelengths()
-            rounded_x = np.round(x, decimals = 2)
-            y = self.spec.intensities(correct_dark_counts = True, correct_nonlinearity = False)
-            self.data = (rounded_x, y)
-            self.data = np.asarray(self.data, dtype=None, order=None)
-            self.signal.emit(self.data)
-            if i == 0:
-                self.spec_array = (rounded_x, y)
-            else:
-                self.spec_array = np.vstack((self.spec_array, y))
+            #lock-in
+            self.point = (t_array[i], y)
+            #intensity_array.append(lock-in measurement) 
+            
+            self.signal.emit(self.point)
+
+            intensity_array = np.array(intensity_array)
+
+            self.data = intensity_array, t_array
 
             sleep(self.tstep)
 
@@ -124,36 +125,45 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         pass     
 
     def measure(self):
-        self.thread.int_time = int(self.intTime_lineEdit.text()) * 1000
-        self.thread.n_spectra = int(self.num_spectra_lineEdit.text())
-        self.thread.tstep = float(self.time_step_lineEdit.text())
+        self.thread.move_to = int(self.intTime_lineEdit.text()) * 1000
+        self.thread.delay = int(self.delay_lineEdit.text())
+        self.thread.init_pos = float(self.init_pos_lineEdit.text())
+        self.thread.fin_pos = float(self.fin_pos_lineEdit.text())
+        self.thread.step = float(self.step_lineEdit.text())
         self.thread.signal.connect(self.plot)
         self.thread.start()
 
-        self.measure_pushButton.setEnabled(False)
-        self.freeRun_pushButton.setEnabled(False)
+        self.init_pushButton.setEnabled(False)
+        self.one_fs_pushButton.setEnabled(False)
+        self.mone_fs_pushButton.setEnabled(False)
+        self.five_fs_pushButton.setEnabled(False)
+        self.mfive_fs_pushButton.setEnabled(False)
+        self.ten_fs_pushButton.setEnabled(False)
+        self.mten_fs_pushButton.setEnabled(False)
+        self.twenty_fs_pushButton.setEnabled(False)
+        self.mtwenty_fs_pushButton.setEnabled(False)
+        self.move_to_pushButton.setEnabled(False)
+        self.delay_pushButton.setEnabled(False)
+        self.freerun_pushButton.setEnabled(False)
+        self.start_pushButton.setEnabled(False)
         self.save_pushButton.setEnabled(False)
         self.clear_pushButton.setEnabled(False)
-        self.thread.finished.connect(lambda: self.measure_pushButton.setEnabled(True))
+        self.exit_pushButton.setEnabled(False)
+        self.thread.finished.connect(lambda: self.start_pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.freeRun_pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.save_pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.clear_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.exit_pushButton.setEnabled(True))
 
     def plot(self, data):
         self.graphicsView.plot(data[0], data[1], clear=False)
         pg.QtWidgets.QApplication.processEvents()
 
     def save(self, mode=str):
-        if mode == 'transient_spectrum':
-            raw_ta_array = np.vstack(TransientAbsorption.ta_array)
-            ta_data = raw_ta_array.transpose()
-            file_spec = qtw.QFileDialog.getSaveFileName()[0]
-            np.savetxt(file_spec, ta_data, header=self.delay_string[1:-1])  #fmt='%1.2f',
-        elif mode == 'dynamics':
-            raw_ta_array = np.vstack(TransientAbsorption.dynamics_array)                      
-            ta_data = raw_ta_array.transpose()
-            file_spec = qtw.QFileDialog.getSaveFileName()[0]
-            np.savetxt(file_spec, ta_data)                                  #, fmt='%1.2f'
+        raw_ta_array = np.vstack(TransientAbsorption.dynamics_array)                      
+        ta_data = raw_ta_array.transpose()
+        file_spec = qtw.QFileDialog.getSaveFileName()[0]
+        np.savetxt(file_spec, ta_data)    
 
     def clear(self):
         self.graphicsView.clear()

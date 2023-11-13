@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>821</width>
+    <width>824</width>
     <height>760</height>
    </rect>
   </property>
@@ -437,7 +437,7 @@ selection-color: rgb(255, 255, 255);
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="delay_pushButton">
             <property name="minimumSize">
              <size>
               <width>60</width>
@@ -461,7 +461,7 @@ selection-color: rgb(255, 255, 255);
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit">
+           <widget class="QLineEdit" name="delay_lineEdit">
             <property name="minimumSize">
              <size>
               <width>50</width>
@@ -690,7 +690,7 @@ selection-color: rgb(255, 255, 255);
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>821</width>
+     <width>824</width>
      <height>21</height>
     </rect>
    </property>
