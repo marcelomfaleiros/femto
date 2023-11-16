@@ -13,9 +13,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QComboBox
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtWidgets as qtw
+import srs_sr830 as srs
 import newport_smc100cc as smc100
 import numpy as np
-import time
+from time import sleep
 import keyboard
 
 class Worker(QThread):
@@ -34,13 +35,13 @@ class Worker(QThread):
             if keyboard.is_pressed('Escape'):
                 break             
             #lock-in
+            y = self.sr830.measure(1)
             self.point = (t_array[i], y)
             #intensity_array.append(lock-in measurement) 
             
             self.signal.emit(self.point)
 
-            intensity_array = np.array(intensity_array)
-
+            intensity_array = np.array(y)
             self.data = intensity_array, t_array
 
             sleep(self.tstep)
@@ -96,11 +97,12 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
 
     def initialization(self):
         #initialize stage
-        smc = smc100.SMC100CC()
-        smc.rs232_set_up()
-
+        self.thread.smc = smc100.SMC100CC()
+        self.thread.smc.rs232_set_up()
         #initialize lock-in amplifier
-        
+        self.thread.sr830 = srs.LIA_SR830()
+        self.thread.sr830.gpib_set_up()
+        self.thread.sr830.initialize()
         self.graph_start_up()
 
     def zero_delay(self):        
@@ -110,19 +112,16 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         return self.zero      
 
     def move_stage_rel(self, step_fs):
-        self.smc.move_rel_fs(step_fs) 
+        self.thread.smc.move_rel_fs(step_fs) 
 
     def move_stage_mm(self):
         #read position from interface
         target_position_mm = float(self.move_to_lineEdit.text())
-        self.smc.move_abs_mm(target_position_mm)
+        self.thread.smc.move_abs_mm(target_position_mm)
 
     def move_stage_fs(self, position_fs):
-        pass
-
-    def intensity(self):  
-        #point from lock-in amplifier  
-        pass     
+        target_position_fs = float(self.delay_lineEdit.text())
+        self.thread.smc.move_abs_mm(target_position_fs)
 
     def measure(self):
         self.thread.move_to = int(self.intTime_lineEdit.text()) * 1000
@@ -160,10 +159,11 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         pg.QtWidgets.QApplication.processEvents()
 
     def save(self, mode=str):
-        raw_ta_array = np.vstack(TransientAbsorption.dynamics_array)                      
-        ta_data = raw_ta_array.transpose()
+        raw_data = self.thread.data.transpose()
+        transposed_raw_data = np.vstack(raw_data)                      
+        data = transposed_raw_data.transpose()
         file_spec = qtw.QFileDialog.getSaveFileName()[0]
-        np.savetxt(file_spec, ta_data)    
+        np.savetxt(file_spec, data)    
 
     def clear(self):
         self.graphicsView.clear()
