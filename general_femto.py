@@ -75,6 +75,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.fin_pos_lineEdit.setText("200")
         self.step_lineEdit.setText("10")
         self.move_to_lineEdit.setText("100")
+        self.delay_lineEdit.setText("0")
 
         self.comboBox.addItems(['CH1 output','CH2 output'])
                         
@@ -97,10 +98,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
 
     def graph_start_up(self):
         self.graphicsView.showGrid(x=True, y=True, alpha=True)
-        self.graphicsView.setLabel("left", "deltaO", units="a.u.")
-        self.graphicsView.setLabel("bottom", "Wavelength", units="nm")
-
-        self.graphicsView.plot(TransientAbsorption.wl_array, TransientAbsorption.deltaO_array)
+        self.graphicsView.setLabel("left", "Intensity", units="a.u.")
+        self.graphicsView.setLabel("bottom", "Delay", units="fs")
 
     def initialization(self):
         #initialize stage
@@ -110,6 +109,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.thread.sr830 = srs.LIA_SR830()
         self.thread.sr830.gpib_set_up()
         self.thread.sr830.initialize()
+        #initialize graph
         self.graph_start_up()
 
     def zero_delay(self):        
