@@ -83,7 +83,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Lock-in output</string>
+             <string>Lock-in channel</string>
             </property>
            </widget>
           </item>

@@ -9,7 +9,7 @@
 import sys
 import os
 from general_femto_interface import Ui_QMainWindow
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QComboBox
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtWidgets as qtw
@@ -24,6 +24,10 @@ class Worker(QThread):
     finished = pyqtSignal()
     
     def run(self, mode = str):
+        if self.channel == 'CH1 output':
+            channel = 'ch1'
+        elif self.channel == 'CH2 output':
+            channel = 'ch2'
 
         intensity_array = []
         
@@ -35,22 +39,23 @@ class Worker(QThread):
             if keyboard.is_pressed('Escape'):
                 break             
             #lock-in
-            y = self.sr830.measure(1)
+            y = self.sr830.measure(channel, 1)
             self.point = (t_array[i], y)
             #intensity_array.append(lock-in measurement) 
-            
+            intensity_array.append(y)
+
             self.signal.emit(self.point)
 
-            intensity_array = np.array(y)
-            self.data = intensity_array, t_array
-
             sleep(self.tstep)
+
+        intensity_array = np.array(intensity_array)
+        self.data = intensity_array, t_array
 
         self.finished.emit()
 
 class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     '''
-    
+
     Usage
     -----
     import general_femto as gf
@@ -70,6 +75,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.fin_pos_lineEdit.setText("200")
         self.step_lineEdit.setText("10")
         self.move_to_lineEdit.setText("100")
+
+        self.comboBox.addItems(['CH1 output','CH2 output'])
                         
         self.init_pushButton.clicked.connect(self.initialization)
         self.freerun_pushButton.clicked.connect(self.intensity)
@@ -106,8 +113,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.graph_start_up()
 
     def zero_delay(self):        
-        self.zero = self.smc.current_position()
-        #self.zero_pos_mm = self.zero/20000
+        self.zero = self.smc.current_position()  #read current stage position
+        #self.zero_pos_mm = self.zero/20000      #convert stage position into mm
         #self.set_zero_delay_label.setText("Zero delay = " + str(self.zero_pos_mm) + " mm")
         return self.zero      
 
@@ -123,7 +130,17 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         target_position_fs = float(self.delay_lineEdit.text())
         self.thread.smc.move_abs_mm(target_position_fs)
 
+    def intensity(self):
+        x = 0
+        while True:
+            y = self.sr830.measure(1)
+            x += 1
+            point(x, y)
+            self.plot(point)
+            sleep(1)
+
     def measure(self):
+        self.thread.channel = self.comboBox.currentText()
         self.thread.move_to = int(self.intTime_lineEdit.text()) * 1000
         self.thread.delay = int(self.delay_lineEdit.text())
         self.thread.init_pos = float(self.init_pos_lineEdit.text())
@@ -154,8 +171,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.thread.finished.connect(lambda: self.clear_pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.exit_pushButton.setEnabled(True))
 
-    def plot(self, data):
-        self.graphicsView.plot(data[0], data[1], clear=False)
+    def plot(self, point):
+        self.graphicsView.plot(point[0], point[1], clear=False)
         pg.QtWidgets.QApplication.processEvents()
 
     def save(self, mode=str):

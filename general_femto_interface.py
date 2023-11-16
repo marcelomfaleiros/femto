@@ -341,7 +341,7 @@ class Ui_QMainWindow(object):
     def retranslateUi(self, QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         QMainWindow.setWindowTitle(_translate("QMainWindow", "General Femto"))
-        self.lia_output_label.setText(_translate("QMainWindow", "Lock-in output"))
+        self.lia_output_label.setText(_translate("QMainWindow", "Lock-in channel"))
         self.init_pushButton.setText(_translate("QMainWindow", "Initialize"))
         self.one_fs_pushButton.setText(_translate("QMainWindow", "1 fs"))
         self.mone_fs_pushButton.setText(_translate("QMainWindow", "-1 fs"))
