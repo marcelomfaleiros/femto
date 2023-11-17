@@ -135,7 +135,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         while True:
             y = self.sr830.measure(1)
             x += 1
-            point(x, y)
+            point = (x, y)
             self.plot(point)
             sleep(1)
 
@@ -185,7 +185,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     def clear(self):
         self.graphicsView.clear()
 
-    def exit(self):       
+    def exit(self):    
+        self.thread.smc.rs232_close()   
         self.close()
 
 if __name__ == '__main__':

@@ -150,6 +150,7 @@ class SMC100CC():
         comm = '1PR' + str(rpos_fs)
         self.ser.write(comm)
         while True:
+            
             self.current_position()
             if self.curr_pos == float(target):
                 break    
