@@ -99,7 +99,9 @@ class SMC100CC():
     def initialization(self):
         self.ser.write('1OR')       #home search
         while True:
-            self.current_position() != 0
+            self.current_position()
+            if self.curr_pos == 0.0:
+                break
 
     def configuration(self):
         n_limit = self.ser.query('1SL?')
@@ -124,9 +126,9 @@ class SMC100CC():
         comm = '1PA' + str(apos_mm)
         self.ser.write(comm)
         while True:
-            if self.current_position() == float(apos_mm):
+            self.current_position()
+            if self.curr_pos == float(apos_mm):
                 break
-        print('deu certo')
 
     def move_rel_mm(self, rpos_mm):
         comm = '1PR' + str(rpos_mm)
