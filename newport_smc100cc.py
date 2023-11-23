@@ -85,7 +85,7 @@ class SMC100CC():
     def rs232_set_up(self):
         self.rm = visa.ResourceManager()
         self.rm.list_resources()
-        self.ser = self.rm.open_resource('ASRL1::INSTR')
+        self.ser = self.rm.open_resource('ASRL9::INSTR')
         self.ser.write_termination='\r\n'
         self.ser.read_termination='\r\n'
         self.ser.baud_rate = 57600
@@ -97,7 +97,9 @@ class SMC100CC():
         #return self.com
 
     def initialization(self):
-        self.ser.write('1OR')
+        self.ser.write('1OR')       #home search
+        while True:
+            self.current_position() != 0
 
     def configuration(self):
         n_limit = self.ser.query('1SL?')
@@ -118,14 +120,13 @@ class SMC100CC():
         self.curr_pos = float(self.curr_pos[-(len(self.curr_pos)-3):])
         return self.curr_pos        
 
-    def move_abs_mm(self, apos_mm):          
+    def move_abs_mm(self, apos_mm):   
         comm = '1PA' + str(apos_mm)
         self.ser.write(comm)
         while True:
-            self.current_position()
-            if self.curr_pos == float(apos_mm):
+            if self.current_position() == float(apos_mm):
                 break
-        return comm
+        print('deu certo')
 
     def move_rel_mm(self, rpos_mm):
         comm = '1PR' + str(rpos_mm)
@@ -134,7 +135,6 @@ class SMC100CC():
             self.current_position()
             if self.curr_pos == float(rpos_mm):
                 break
-        return comm
 
     def move_abs_fs(self, apos_fs):
         target = round(0.0003 * apos_fs, 1)
@@ -149,11 +149,10 @@ class SMC100CC():
         target = round(0.0003 * apos_fs, 1)
         comm = '1PR' + str(rpos_fs)
         self.ser.write(comm)
-        while True:
-            
+        while True:            
             self.current_position()
             if self.curr_pos == float(target):
                 break    
 
-    def rs232_close():
+    def rs232_close(self):
         self.ser.close()
