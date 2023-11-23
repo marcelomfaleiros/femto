@@ -73,7 +73,7 @@ class LIA_SR830():
 
     def gpib_set_up(self):
         self.rm = visa.ResourceManager()
-        self.sr830 = self.rm.open_resource('GPIB0::8')
+        self.sr830 = self.rm.open_resource('GPIB0::12')
         self.sr830.read_termination = '\n'
         self.sr830.write_termination = '\n'
         

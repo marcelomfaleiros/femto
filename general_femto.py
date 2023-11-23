@@ -74,7 +74,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.init_pos_lineEdit.setText("-100")
         self.fin_pos_lineEdit.setText("200")
         self.step_lineEdit.setText("10")
-        self.move_to_lineEdit.setText("100")
+        self.move_to_lineEdit.setText("0")
         self.delay_lineEdit.setText("0")
 
         self.comboBox.addItems(['CH1 output','CH2 output'])
@@ -105,6 +105,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         #initialize stage
         self.thread.smc = smc100.SMC100CC()
         self.thread.smc.rs232_set_up()
+        self.thread.smc.initialize()
         #initialize lock-in amplifier
         self.thread.sr830 = srs.LIA_SR830()
         self.thread.sr830.gpib_set_up()
@@ -114,7 +115,6 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
 
     def zero_delay(self):        
         self.zero = self.smc.current_position()  #read current stage position
-        #self.zero_pos_mm = self.zero/20000      #convert stage position into mm
         #self.set_zero_delay_label.setText("Zero delay = " + str(self.zero_pos_mm) + " mm")
         return self.zero      
 
@@ -124,19 +124,29 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     def move_stage_mm(self):
         #read position from interface
         target_position_mm = float(self.move_to_lineEdit.text())
+        #move to target position in mm
         self.thread.smc.move_abs_mm(target_position_mm)
 
-    def move_stage_fs(self, position_fs):
+    def move_stage_fs(self):
+        #read position from interface
         target_position_fs = float(self.delay_lineEdit.text())
-        self.thread.smc.move_abs_mm(target_position_fs)
+        #move to target position in fs
+        self.thread.smc.move_abs_fs(target_position_fs)
 
     def intensity(self):
         x = 0
+        y = 0
+        x_array = []
+        y_array = []
         while True:
-            y = self.sr830.measure(1)
-            x += 1
-            point = (x, y)
+            if keyboard.is_pressed('Escape'):
+                break
+            y = self.thread.sr830.measure(1)
+            y_array.append(y)
+            x_array.append(x)
+            point = (x_array, y_array)
             self.plot(point)
+            x += 1
             sleep(1)
 
     def measure(self):

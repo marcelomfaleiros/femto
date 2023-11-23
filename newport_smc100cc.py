@@ -96,7 +96,7 @@ class SMC100CC():
         self.ser.timeout = 25000
         #return self.com
 
-    def initialization(self):
+    def initialize(self):
         self.ser.write('1OR')       #home search
         while True:
             self.current_position()
@@ -148,8 +148,8 @@ class SMC100CC():
                 break                      
 
     def move_rel_fs(self, rpos_fs):
-        target = round(0.0003 * apos_fs, 1)
-        comm = '1PR' + str(rpos_fs)
+        target = round(0.0003 * rpos_fs, 1)
+        comm = '1PR' + str(target)
         self.ser.write(comm)
         while True:            
             self.current_position()
