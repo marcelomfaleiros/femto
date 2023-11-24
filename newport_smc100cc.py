@@ -75,7 +75,9 @@ class SMC100CC():
 
     smc = smc100.SMC100CC()
     smc.rs232_set_up()
-    smc.command('1VA?')
+    smc.initialize()
+    smc.current_position()
+    smc.move_abs_mm(40)
     '''
            
     def __init__(self):
@@ -130,31 +132,33 @@ class SMC100CC():
             if self.curr_pos == float(apos_mm):
                 break
 
-    def move_rel_mm(self, rpos_mm):
-        comm = '1PR' + str(rpos_mm)
-        self.ser.write(comm)
-        while True:
-            self.current_position()
-            if self.curr_pos == float(rpos_mm):
-                break
-
     def move_abs_fs(self, apos_fs):
         target = round(0.0003 * apos_fs, 1)
         comm = '1PA' + str(target)
         self.ser.write(comm)
         while True:
             self.current_position()
-            if self.curr_pos == float(target):
-                break                      
+            if self.curr_pos == target:
+                break
+
+    def move_rel_mm(self, rpos_mm):
+        comm = '1PR' + str(rpos_mm)
+        pos = self.current_position()
+        self.ser.write(comm)
+        while True:
+            self.current_position()
+            if self.curr_pos == pos + float(rpos_mm):
+                break
 
     def move_rel_fs(self, rpos_fs):
         target = round(0.0003 * rpos_fs, 1)
         comm = '1PR' + str(target)
+        pos = self.current_position()
         self.ser.write(comm)
         while True:            
             self.current_position()
-            if self.curr_pos == float(target):
-                break    
+            if self.curr_pos == pos + target:
+                break 
 
     def rs232_close(self):
         self.ser.close()

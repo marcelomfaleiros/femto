@@ -81,16 +81,17 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
                         
         self.init_pushButton.clicked.connect(self.initialization)
         self.freerun_pushButton.clicked.connect(self.intensity)
-        self.one_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(1))
-        self.mone_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-1))
-        self.five_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5))
-        self.mfive_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-5))
-        self.ten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(10))
-        self.mten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-10))
-        self.twenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(20))
-        self.mtwenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-20))
+        self.one_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(1000))
+        self.mone_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-1000))
+        self.five_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5000))
+        self.mfive_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-5000))
+        self.ten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5000))
+        self.mten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-5000))
+        self.twenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5000))
+        self.mtwenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-5000))
         self.set_zero_pushButton.clicked.connect(self.zero_delay)
         self.move_to_pushButton.clicked.connect(self.move_stage_mm)
+        self.delay_pushButton.clicked.connect(self.move_stage_fs)
         self.start_pushButton.clicked.connect(self.measure)
         self.save_pushButton.clicked.connect(self.save)
         self.clear_pushButton.clicked.connect(self.clear)
@@ -114,7 +115,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.graph_start_up()
 
     def zero_delay(self):        
-        self.zero = self.smc.current_position()  #read current stage position
+        self.zero = self.thread.smc.current_position()  #read current stage position
         #self.set_zero_delay_label.setText("Zero delay = " + str(self.zero_pos_mm) + " mm")
         return self.zero      
 
@@ -141,13 +142,12 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         while True:
             if keyboard.is_pressed('Escape'):
                 break
-            y = self.thread.sr830.measure(1)
+            y = self.thread.sr830.measure(0.2)
             y_array.append(y)
             x_array.append(x)
             point = (x_array, y_array)
             self.plot(point)
             x += 1
-            sleep(1)
 
     def measure(self):
         self.thread.channel = self.comboBox.currentText()
