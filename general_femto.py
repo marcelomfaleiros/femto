@@ -29,7 +29,7 @@ class Worker(QThread):
         elif self.channel == 'CH2 output':
             channel = 'ch2'
 
-        intensity_array = []
+        intensity_array = np.array([])
         
         t_array = [round(i * self.tstep, 2) for i in range(self.n_spectra + 1)]
         t_array = np.array(t_array)
@@ -42,7 +42,7 @@ class Worker(QThread):
             y = self.sr830.measure_buffer(channel, 1)
             self.point = (t_array[i], y)
             #intensity_array.append(lock-in measurement) 
-            intensity_array.append(y)
+            np.append(intensity_array, y)
 
             self.signal.emit(self.point)
 
@@ -131,8 +131,10 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     def move_stage_fs(self):
         #read position from interface
         target_position_fs = float(self.delay_lineEdit.text())
+        delay_zero = self.zero
+        target_fs = target_position_fs + delay_zero
         #move to target position in fs
-        self.thread.smc.move_rel_fs(target_position_fs)
+        self.thread.smc.move_abs_fs(target_fs)
 
     def intensity(self):
         x = 0
