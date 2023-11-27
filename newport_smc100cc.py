@@ -7,7 +7,6 @@
 """
 
 import pyvisa as visa
-import time
 
 class SMC100CC():
     '''

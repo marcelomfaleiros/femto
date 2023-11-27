@@ -39,7 +39,7 @@ class Worker(QThread):
             if keyboard.is_pressed('Escape'):
                 break             
             #lock-in
-            y = self.sr830.measure(channel, 1)
+            y = self.sr830.measure_buffer(channel, 1)
             self.point = (t_array[i], y)
             #intensity_array.append(lock-in measurement) 
             intensity_array.append(y)
@@ -59,7 +59,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     Usage
     -----
     import general_femto as gf
-    import time
+    from time import sleep
 
     '''
            
@@ -81,14 +81,14 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
                         
         self.init_pushButton.clicked.connect(self.initialization)
         self.freerun_pushButton.clicked.connect(self.intensity)
-        self.one_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(1000))
-        self.mone_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-1000))
-        self.five_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5000))
-        self.mfive_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-5000))
-        self.ten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5000))
-        self.mten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-5000))
-        self.twenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5000))
-        self.mtwenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-5000))
+        self.one_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(1))
+        self.mone_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-1))
+        self.five_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(5))
+        self.mfive_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-5))
+        self.ten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(10))
+        self.mten_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-10))
+        self.twenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(20))
+        self.mtwenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-20))
         self.set_zero_pushButton.clicked.connect(self.zero_delay)
         self.move_to_pushButton.clicked.connect(self.move_stage_mm)
         self.delay_pushButton.clicked.connect(self.move_stage_fs)
@@ -132,7 +132,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         #read position from interface
         target_position_fs = float(self.delay_lineEdit.text())
         #move to target position in fs
-        self.thread.smc.move_abs_fs(target_position_fs)
+        self.thread.smc.move_rel_fs(target_position_fs)
 
     def intensity(self):
         x = 0
@@ -142,7 +142,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         while True:
             if keyboard.is_pressed('Escape'):
                 break
-            y = self.thread.sr830.measure(0.2)
+            y = self.thread.sr830.measure_display(1000)
             y_array.append(y)
             x_array.append(x)
             point = (x_array, y_array)

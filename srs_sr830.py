@@ -7,8 +7,8 @@
 """
 
 import pyvisa as visa
-import statistics
-import time
+import numpy as np
+from time import sleep
 
 class LIA_SR830():
 
@@ -92,26 +92,37 @@ class LIA_SR830():
         tc_response = [0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.5, 1.5,
                        5, 15, 50, 150, 500, 1500, 5000, 15000, 50000, 150000]
         time_wait = tc_response[tc_index]
-        time.sleep(time_wait) 
+        sleep(time_wait) 
 
-    def measure(self, acqstn_time):
+    def measure_buffer(self, acqstn_time):
         self.sr830.write('STRT')         #Start or continue a scan
-        time.sleep(acqstn_time)          #wait measuring
+        sleep(acqstn_time)          #wait measuring
         self.sr830.write('PAUS')         #Pause during a scan.
         self.sr830.write('SPTS?')        #Query the number of points stored in the Display buffer
-        time.sleep(0.1)
+        sleep(0.1)
         length = self.sr830.read()       #read the number of points stored in the Display buffer
         readbuff_ch1 = 'TRCA? 1,0,'+ length   
         self.sr830.write(readbuff_ch1)   #Query points from Display ch 1 buffer in ASCII floating point.
-        time.sleep(0.1)
+        sleep(0.1)
         y_result = self.sr830.read()     #Read points from Display ch 1 buffer in ASCII floating point.
-        time.sleep(0.1)
+        sleep(0.1)
         y_list = y_result.split(',')     #format data into a string list        
         del y_list[-1]
         for i in range(len(y_list)):
             y_list[i] = float(y_list[i]) #format data into a float list
         self.sr830.write('REST')         #Reset the scan. All stored data is lost.
-        mean = statistics.mean(y_list)   #compute the mean of the data
+        buffer_mean = np.mean(y_list)   #compute the mean of the data
 
-        return mean
+        return buffer_mean
         
+    def measure_display(self, samples_number):
+        time_constant = self.sr830.write('OFTL?')    #query the time constant
+        wait_time = 5 * time_constant                #five times the time constant
+        sleep(wait_time)                             #wait to start measuring
+        self.sr830.write('DDEF 1')                   #select the CH1 display
+        sample = 0                                   #initialize sample variable
+        for i in range(samples_number):              
+            sample += self.sr830.query('OUTR 1')     #measure samples_number points
+        sample_mean = sample / (samples_number + 1)  #compute the mean of the data
+
+        return sample_mean
