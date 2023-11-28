@@ -29,16 +29,16 @@ class Worker(QThread):
         elif self.channel == 'CH2 output':
             channel = 'ch2'
 
-        intensity_array = np.array([])
-        t_array = [round(i * self.tstep, 2) for i in range(self.n_spectra + 1)]
-        t_array = np.array(t_array)
-        self.t_string = np.array2string(t_array, precision=2, separator=' ', suppress_small=True)
-        
-        for i in t_array:
+        intensity_array = np.array([0])
+        delay_array = np.array([0])
+              
+        for d in range(self.init_pos, (self.fin_pos + self.step), self.step):
             if keyboard.is_pressed('Escape'):
-                break             
+                break 
+            delay_array = np.append(delay_array, d)  
+            self.move_stage_fs(d)          
             #lock-in
-            y = self.sr830.measure_buffer(channel, 1)
+            y = self.sr830.measure_buffer(channel, self.sampling_time)
             self.point = (t_array[i], y)
             #intensity_array.append(lock-in measurement) 
             intensity_array = np.append(intensity_array, y)
@@ -47,7 +47,7 @@ class Worker(QThread):
 
             sleep(self.tstep)
 
-        self.data = intensity_array, t_array
+        self.data = intensity_array, delay_array
 
         self.finished.emit()
 
@@ -89,7 +89,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.mtwenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-20))
         self.set_zero_pushButton.clicked.connect(self.zero_delay)
         self.move_to_pushButton.clicked.connect(self.move_stage_mm)
-        self.delay_pushButton.clicked.connect(self.move_stage_fs)
+        self.delay_pushButton.clicked.connect(lambda: self.move_stage_fs(float(self.delay_lineEdit.text())))
         self.start_pushButton.clicked.connect(self.measure)
         self.save_pushButton.clicked.connect(self.save)
         self.clear_pushButton.clicked.connect(self.clear)
@@ -126,11 +126,9 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         #move to target position in mm
         self.thread.smc.move_abs_mm(target_position_mm)
 
-    def move_stage_fs(self):
-        #read position from interface
-        target_position_fs = float(self.delay_lineEdit.text())
+    def move_stage_fs(self, delay):
         delay_zero = self.zero
-        target_fs = target_position_fs + delay_zero
+        target_fs = delay + delay_zero
         #move to target position in fs
         self.thread.smc.move_abs_fs(target_fs)
 
@@ -156,6 +154,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.thread.init_pos = float(self.init_pos_lineEdit.text())
         self.thread.fin_pos = float(self.fin_pos_lineEdit.text())
         self.thread.step = float(self.step_lineEdit.text())
+        self.thread.sampling_time = float(self.sample.lineEdit.text())
         self.thread.signal.connect(self.plot)
         self.thread.start()
 

@@ -7,8 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>824</width>
-    <height>760</height>
+    <height>600</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>300</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>General Femto</string>
@@ -555,7 +561,7 @@ selection-color: rgb(255, 255, 255);
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="sample_label">
+           <widget class="QLabel" name="sampl_time_label">
             <property name="font">
              <font>
               <family>Arial</family>
@@ -565,7 +571,7 @@ selection-color: rgb(255, 255, 255);
              </font>
             </property>
             <property name="text">
-             <string>Sample</string>
+             <string>Sampling time</string>
             </property>
            </widget>
           </item>
