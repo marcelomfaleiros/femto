@@ -30,7 +30,6 @@ class Worker(QThread):
             channel = 'ch2'
 
         intensity_array = np.array([])
-        
         t_array = [round(i * self.tstep, 2) for i in range(self.n_spectra + 1)]
         t_array = np.array(t_array)
         self.t_string = np.array2string(t_array, precision=2, separator=' ', suppress_small=True)
@@ -42,13 +41,12 @@ class Worker(QThread):
             y = self.sr830.measure_buffer(channel, 1)
             self.point = (t_array[i], y)
             #intensity_array.append(lock-in measurement) 
-            np.append(intensity_array, y)
+            intensity_array = np.append(intensity_array, y)
 
             self.signal.emit(self.point)
 
             sleep(self.tstep)
 
-        intensity_array = np.array(intensity_array)
         self.data = intensity_array, t_array
 
         self.finished.emit()
