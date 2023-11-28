@@ -554,6 +554,28 @@ selection-color: rgb(255, 255, 255);
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QLabel" name="sample_label">
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>11</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Sample</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="sample_lineEdit">
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(255, 255, 255);</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
