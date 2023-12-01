@@ -51,11 +51,7 @@ class Worker(QThread):
 class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     '''
 
-    Usage
-    -----
-    import general_femto as gf
-    from time import sleep
-
+    
     '''
            
     def __init__(self, *args, **kwargs):
@@ -129,7 +125,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.thread.smc.move_abs_fs(target_fs)                                      #move to target position in fs
         current_mm = self.thread.smc.current_position()                             #read current stage position
         self.current_mm_label.setText("Current (mm): " + str(current_mm))           #display current position in mm
-        current_fs = (current_mm - self.zero)/0.0003                       #convert to fs
+        current_fs = (current_mm - self.zero)/0.0003                                #convert to fs
         self.current_fs_label.setText("Current (fs): " + str(round(current_fs, 1))) #display current position in mm
 
     def intensity(self):
