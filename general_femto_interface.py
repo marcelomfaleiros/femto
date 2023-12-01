@@ -1,4 +1,4 @@
-# """  """# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'general_femto_interface.ui'
 #
@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_QMainWindow(object):
     def setupUi(self, QMainWindow):
         QMainWindow.setObjectName("QMainWindow")
-        QMainWindow.resize(824, 600)
+        QMainWindow.resize(866, 600)
         QMainWindow.setMinimumSize(QtCore.QSize(0, 300))
         self.centralwidget = QtWidgets.QWidget(QMainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -66,6 +66,21 @@ class Ui_QMainWindow(object):
         self.init_pushButton.setStyleSheet("background-color: rgb(255, 196, 157);")
         self.init_pushButton.setObjectName("init_pushButton")
         self.horizontalLayout_2.addWidget(self.init_pushButton)
+        self.zero_delay_label = QtWidgets.QLabel(self.frame_3)
+        self.zero_delay_label.setMinimumSize(QtCore.QSize(150, 0))
+        self.zero_delay_label.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.zero_delay_label.setObjectName("zero_delay_label")
+        self.horizontalLayout_2.addWidget(self.zero_delay_label)
+        self.current_fs_label = QtWidgets.QLabel(self.frame_3)
+        self.current_fs_label.setMinimumSize(QtCore.QSize(180, 0))
+        self.current_fs_label.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.current_fs_label.setObjectName("current_fs_label")
+        self.horizontalLayout_2.addWidget(self.current_fs_label)
+        self.current_mm_label = QtWidgets.QLabel(self.frame_3)
+        self.current_mm_label.setMinimumSize(QtCore.QSize(180, 0))
+        self.current_mm_label.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.current_mm_label.setObjectName("current_mm_label")
+        self.horizontalLayout_2.addWidget(self.current_mm_label)
         self.verticalLayout_2.addWidget(self.frame_3)
         self.frame_6 = QtWidgets.QFrame(self.frame_2)
         self.frame_6.setStyleSheet("background-color: rgb(255, 254, 228);")
@@ -345,7 +360,7 @@ class Ui_QMainWindow(object):
         self.verticalLayout.addWidget(self.frame)
         QMainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(QMainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 824, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 866, 21))
         self.menubar.setObjectName("menubar")
         QMainWindow.setMenuBar(self.menubar)
 
@@ -357,6 +372,9 @@ class Ui_QMainWindow(object):
         QMainWindow.setWindowTitle(_translate("QMainWindow", "General Femto"))
         self.lia_output_label.setText(_translate("QMainWindow", "Lock-in channel"))
         self.init_pushButton.setText(_translate("QMainWindow", "Initialize"))
+        self.zero_delay_label.setText(_translate("QMainWindow", "zero delay (mm)"))
+        self.current_fs_label.setText(_translate("QMainWindow", "current (fs)"))
+        self.current_mm_label.setText(_translate("QMainWindow", "current (mm)"))
         self.one_fs_pushButton.setText(_translate("QMainWindow", "1 fs"))
         self.mone_fs_pushButton.setText(_translate("QMainWindow", "-1 fs"))
         self.five_fs_pushButton.setText(_translate("QMainWindow", "5 fs"))

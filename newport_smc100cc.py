@@ -7,6 +7,7 @@
 """
 
 import pyvisa as visa
+from time import sleep
 
 class SMC100CC():
     '''
@@ -98,7 +99,9 @@ class SMC100CC():
         #return self.com
 
     def initialize(self):
-        self.ser.write('1OR')       #home search
+        self.rs232_set_up()
+        sleep(0.2)
+        self.ser.write('1OR')               #home search
         while True:
             self.current_position()
             if self.curr_pos == 0.0:
@@ -132,7 +135,7 @@ class SMC100CC():
                 break
 
     def move_abs_fs(self, apos_fs):
-        target = round(0.0003 * apos_fs, 1)
+        target = round(0.0003 * apos_fs, 5)
         comm = '1PA' + str(target)
         self.ser.write(comm)
         while True:

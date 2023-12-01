@@ -3,7 +3,6 @@
 """ 
     Author: Marcelo Meira Faleiros
     State University of Campinas, Brazil
-
 """
 
 import sys
@@ -39,13 +38,11 @@ class Worker(QThread):
             self.move_stage_fs(d)          
             #lock-in
             y = self.sr830.measure_buffer(channel, self.sampling_time)
-            self.point = (t_array[i], y)
-            #intensity_array.append(lock-in measurement) 
+            #intensity_array.append(lock-in measurement)
             intensity_array = np.append(intensity_array, y)
-
+            self.point = (delay_array, intensity_array)
+             
             self.signal.emit(self.point)
-
-            sleep(self.tstep)
 
         self.data = intensity_array, delay_array
 
@@ -89,7 +86,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.mtwenty_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(-20))
         self.set_zero_pushButton.clicked.connect(self.zero_delay)
         self.move_to_pushButton.clicked.connect(self.move_stage_mm)
-        self.delay_pushButton.clicked.connect(lambda: self.move_stage_fs(float(self.delay_lineEdit.text())))
+        self.delay_pushButton.clicked.connect(self.move_stage_fs)
         self.start_pushButton.clicked.connect(self.measure)
         self.save_pushButton.clicked.connect(self.save)
         self.clear_pushButton.clicked.connect(self.clear)
@@ -103,34 +100,37 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     def initialization(self):
         #initialize stage
         self.thread.smc = smc100.SMC100CC()
-        self.thread.smc.rs232_set_up()
         self.thread.smc.initialize()
         #initialize lock-in amplifier
         self.thread.sr830 = srs.LIA_SR830()
-        self.thread.sr830.gpib_set_up()
         self.thread.sr830.initialize()
         #initialize graph
         self.graph_start_up()
 
     def zero_delay(self):        
-        self.zero = self.thread.smc.current_position()  #read current stage position
-        #self.set_zero_delay_label.setText("Zero delay = " + str(self.zero_pos_mm) + " mm")
+        self.zero = self.thread.smc.current_position()                      #read current stage position
+        self.zero_delay_label.setText("Zero delay (mm): " + str(self.zero))
         return self.zero      
 
     def move_stage_rel(self, step_fs):
         self.thread.smc.move_rel_fs(step_fs) 
+        current_mm = self.thread.smc.current_position()                     #read current stage position
+        self.current_mm_label.setText("Current (mm): " + str(current_mm))   #display current position in mm
 
     def move_stage_mm(self):
-        #read position from interface
-        target_position_mm = float(self.move_to_lineEdit.text())
-        #move to target position in mm
-        self.thread.smc.move_abs_mm(target_position_mm)
+        target_position_mm = float(self.move_to_lineEdit.text())            #read target position from interface
+        self.thread.smc.move_abs_mm(target_position_mm)                     #move to target position in mm
+        current_mm = self.thread.smc.current_position()                     #read current stage position
+        self.current_mm_label.setText("Current (mm): " + str(current_mm))   #display current position in mm
 
-    def move_stage_fs(self, delay):
-        delay_zero = self.zero
-        target_fs = delay + delay_zero
-        #move to target position in fs
-        self.thread.smc.move_abs_fs(target_fs)
+    def move_stage_fs(self):
+        target_delay = float(self.delay_lineEdit.text())                            #read target position from interface
+        target_fs = target_delay + self.zero/0.0003                                 #compute target delay position
+        self.thread.smc.move_abs_fs(target_fs)                                      #move to target position in fs
+        current_mm = self.thread.smc.current_position()                             #read current stage position
+        self.current_mm_label.setText("Current (mm): " + str(current_mm))           #display current position in mm
+        current_fs = (current_mm - self.zero)/0.0003                       #convert to fs
+        self.current_fs_label.setText("Current (fs): " + str(round(current_fs, 1))) #display current position in mm
 
     def intensity(self):
         x = 0

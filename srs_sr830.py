@@ -78,6 +78,7 @@ class LIA_SR830():
         self.sr830.write_termination = '\n'
         
     def initialize(self):
+        self.gpib_set_up()
         self.sr830.timeout = 20000
         self.sr830.write('OUTX 1')       #Set the Output Interface to GPIB (1).
         self.sr830.write('*CLS')         #Clear all status bytes.
