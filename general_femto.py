@@ -61,7 +61,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.setupUi(self)
 
         self.thread = Worker()
-
+        #initializing line edit fields
         self.init_pos_lineEdit.setText("-100")
         self.fin_pos_lineEdit.setText("200")
         self.step_lineEdit.setText("10")
@@ -69,7 +69,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.delay_lineEdit.setText("0")
 
         self.comboBox.addItems(['CH1 output','CH2 output'])
-                        
+        #defining action for the buttons
         self.init_pushButton.clicked.connect(self.initialization)
         self.freerun_pushButton.clicked.connect(self.intensity)
         self.one_fs_pushButton.clicked.connect(lambda: self.move_stage_rel(1))
@@ -105,11 +105,11 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
 
     def zero_delay(self):        
         self.zero = self.thread.smc.current_position()                      #read current stage position
-        self.zero_delay_label.setText("Zero delay (mm): " + str(self.zero))
+        self.zero_delay_label.setText("Zero delay (mm): " + str(self.zero)) #display zero delay position
         return self.zero      
 
     def move_stage_rel(self, step_fs):
-        self.thread.smc.move_rel_fs(step_fs) 
+        self.thread.smc.move_rel_fs(step_fs)                                #move one step
         current_mm = self.thread.smc.current_position()                     #read current stage position
         self.current_mm_label.setText("Current (mm): " + str(current_mm))   #display current position in mm
 
@@ -136,7 +136,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         while True:
             if keyboard.is_pressed('Escape'):
                 break
-            y = self.thread.sr830.measure_display(1000)
+            y = self.thread.sr830.measure_display(10)
             y_array.append(y)
             x_array.append(x)
             point = (x_array, y_array)
@@ -144,6 +144,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
             x += 1
 
     def measure(self):
+        #set interface elements as Worker thread elements
         self.thread.channel = self.comboBox.currentText()
         self.thread.move_to = int(self.intTime_lineEdit.text()) * 1000
         self.thread.delay = int(self.delay_lineEdit.text())
@@ -153,7 +154,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.thread.sampling_time = float(self.sample.lineEdit.text())
         self.thread.signal.connect(self.plot)
         self.thread.start()
-
+        #disable interface buttons while measurement is running
         self.init_pushButton.setEnabled(False)
         self.one_fs_pushButton.setEnabled(False)
         self.mone_fs_pushButton.setEnabled(False)
@@ -170,6 +171,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.save_pushButton.setEnabled(False)
         self.clear_pushButton.setEnabled(False)
         self.exit_pushButton.setEnabled(False)
+        #conect the interface buttons to the Worker thread
         self.thread.finished.connect(lambda: self.start_pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.freeRun_pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.save_pushButton.setEnabled(True))
