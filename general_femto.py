@@ -53,6 +53,7 @@ class Worker(QThread):
             self.signal.emit(self.point)
 
         self.data = delay_array, intensity_array
+        self.mode = 'measure'
     
         self.finished.emit()
 
@@ -160,6 +161,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
             point = (x_array, y_array)
             self.plot(point)
             x += 1
+        self.data = point
+        self.thread.mode = 'free run'
 
     def measure(self):
         #set interface elements as Worker thread elements
@@ -212,8 +215,11 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.graphicsView.plot(point[0], point[1], pen=None, symbol='o', clear=False)
         pg.QtWidgets.QApplication.processEvents()
 
-    def save(self, mode=str):       
-        raw_data = np.array(self.thread.data)
+    def save(self):  
+        if self.thread.mode == 'measure':
+            raw_data = np.array(self.thread.data)
+        elif self.thread.mode == 'free run':
+            raw_data = np.array(self.data)
         transposed_raw_data = np.vstack(raw_data)                      
         data = transposed_raw_data.transpose()
         file_spec = qtw.QFileDialog.getSaveFileName()[0]
