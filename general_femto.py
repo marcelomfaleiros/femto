@@ -5,8 +5,6 @@
     State University of Campinas, Brazil
 """
 
-import sys
-import os
 from general_femto_interface import Ui_QMainWindow
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QComboBox
@@ -21,14 +19,13 @@ import keyboard
 class Worker(QThread):
     signal = pyqtSignal(object)
     finished = pyqtSignal()
+    position_mm = pyqtSignal(float)
 
     def move_stage_fs(self, target_delay):                                     
-        target_fs = target_delay + self.zero/0.0003                                 #compute target delay position
-        self.smc.move_abs_fs(target_fs)                                      #move to target position in fs
-        current_mm = self.smc.current_position()                             #read current stage position
-        #self.current_mm_label.setText("Current (mm): " + str(current_mm))           #display current position in mm
-        current_fs = (current_mm - self.zero)/0.0003                                #convert to fs
-        #self.current_fs_label.setText("Current (fs): " + str(round(current_fs, 1))) #display current position in mm
+        target_fs = target_delay + self.zero/0.0003             #compute target delay position
+        self.smc.move_abs_fs(target_fs)                         #move to target position in fs
+        self.current_mm = self.smc.current_position()           #read current stage position          
+        self.position_mm.emit(self.current_mm)
 
     def run(self, mode = str):
         if self.channel == 'CH1 output':
@@ -55,7 +52,8 @@ class Worker(QThread):
              
             self.signal.emit(self.point)
 
-        self.data = intensity_array, delay_array
+        self.data = delay_array, intensity_array
+        print(type(self.data))
 
         self.finished.emit()
 
@@ -63,13 +61,14 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     '''
 
     
-    '''
-           
+    '''           
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setObjectName("General Femto")
         self.setupUi(self)
+
+        self.is_zero_defined = False
 
         self.thread = Worker()
         #initializing line edit fields
@@ -116,30 +115,37 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.graph_start_up()
 
     def zero_delay(self):        
-        self.zero = self.thread.smc.current_position()  
+        self.zero = self.thread.smc.current_position()                      #read current stage position
         self.thread.zero = self.zero
-        #self.thread.zero = self.zero                    #read current stage position
         self.zero_delay_label.setText("Zero delay (mm): " + str(self.zero)) #display zero delay position
+        self.current_fs_label.setText("Current (fs): 0")                  #display zero delay position
+        self.is_zero_defined = True
         return self.zero      
 
     def move_stage_rel(self, step_fs):
         self.thread.smc.move_rel_fs(step_fs)                                #move one step
         current_mm = self.thread.smc.current_position()                     #read current stage position
-        self.current_mm_label.setText("Current (mm): " + str(current_mm))   #display current position in mm
 
     def move_stage_mm(self):
         target_position_mm = float(self.move_to_lineEdit.text())            #read target position from interface
         self.thread.smc.move_abs_mm(target_position_mm)                     #move to target position in mm
         current_mm = self.thread.smc.current_position()                     #read current stage position
-        self.current_mm_label.setText("Current (mm): " + str(current_mm))   #display current position in mm
+        self.show_position(current_mm) 
 
     def move_stage_fs(self, target_delay):                                     
-        target_fs = target_delay + self.zero/0.0003                                 #compute target delay position
-        self.thread.smc.move_abs_fs(target_fs)                                      #move to target position in fs
-        current_mm = self.thread.smc.current_position()                             #read current stage position
-        self.current_mm_label.setText("Current (mm): " + str(current_mm))           #display current position in mm
-        current_fs = (current_mm - self.zero)/0.0003                                #convert to fs
-        self.current_fs_label.setText("Current (fs): " + str(round(current_fs, 1))) #display current position in mm
+        target_fs = target_delay + self.zero/0.0003                         #compute target delay position
+        self.thread.smc.move_abs_fs(target_fs)
+        current_mm = self.thread.smc.current_position()                     #read current stage position
+        self.show_position(current_mm)
+        
+    def show_position(self, current_mm):                                    #move to target position in fs
+        self.current_mm_label.setText("Current (mm): " + str(current_mm))   #display current position in mm
+        if self.is_zero_defined ==  True:
+            current_fs = (current_mm - self.zero)/0.0003 
+            self.current_fs_label.setText("Current (fs): " + str(round(current_fs, 1))) #display current position in mm
+        elif self.is_zero_defined ==  False:
+            self.zero_delay_label.setText("Zero delay (mm): Not defined")   #display zero delay position
+            self.current_fs_label.setText("Current (fs): Not defined")      #display current position in mm
 
     def intensity(self):
         x = 0
@@ -149,7 +155,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         while True:
             if keyboard.is_pressed('Escape'):
                 break
-            y = self.sr830.measure_display(20)
+            y = self.thread.sr830.measure_display(20)
             y_array.append(y)
             x_array.append(x)
             point = (x_array, y_array)
@@ -166,6 +172,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.thread.step = int(self.step_lineEdit.text())
         self.thread.sampling_time = float(self.sample_lineEdit.text())
         self.thread.signal.connect(self.plot)
+        self.thread.position_mm.connect(self.show_position)
         self.thread.start()
         #disable interface buttons while measurement is running
         self.init_pushButton.setEnabled(False)
@@ -185,6 +192,17 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.clear_pushButton.setEnabled(False)
         self.exit_pushButton.setEnabled(True)
         #connect the interface buttons to the Worker thread
+        self.thread.finished.connect(lambda: self.init_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.one_fs_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.mone_fs_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.five_fs_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.mfive_fs_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.ten_fs_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.mten_fs_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.twenty_fs_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.mtwenty_fs_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.move_to_pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.delay_pushButton.setEnabled(True))        
         self.thread.finished.connect(lambda: self.start_pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.freerun_pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.save_pushButton.setEnabled(True))
@@ -195,8 +213,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.graphicsView.plot(point[0], point[1], pen=None, symbol='o', clear=False)
         pg.QtWidgets.QApplication.processEvents()
 
-    def save(self, mode=str):
-        raw_data = self.thread.data.transpose()
+    def save(self, mode=str):       
+        raw_data = np.array(self.thread.data)
         transposed_raw_data = np.vstack(raw_data)                      
         data = transposed_raw_data.transpose()
         file_spec = qtw.QFileDialog.getSaveFileName()[0]
