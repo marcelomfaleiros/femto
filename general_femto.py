@@ -53,8 +53,7 @@ class Worker(QThread):
             self.signal.emit(self.point)
 
         self.data = delay_array, intensity_array
-        print(type(self.data))
-
+    
         self.finished.emit()
 
 class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
