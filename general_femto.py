@@ -12,7 +12,6 @@ from pyqtgraph.Qt import QtWidgets as qtw
 import srs_sr830 as srs
 import newport_smc100cc as smc100
 import numpy as np
-from time import sleep
 import keyboard
 
 class Worker(QThread):
