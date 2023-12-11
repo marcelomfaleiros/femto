@@ -6,8 +6,7 @@
 """
 
 from general_femto_interface import Ui_QMainWindow
-from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, QTimer
-from PyQt5.QtWidgets import QComboBox
+from PyQt5.QtCore import QThread, pyqtSignal
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtWidgets as qtw
 import srs_sr830 as srs
