@@ -99,15 +99,18 @@ class LIA_SR830():
         time_wait = tc_response * 5                 #multiply time constant by 5
         sleep(time_wait)                            #wait 5 time constants
 
-    def measure_buffer(self, acqstn_time):
+    def measure_buffer(self, channel, acqstn_time):
         self.sr830.write('STRT')            #Start or continue a scan
         sleep(acqstn_time)                  #wait measuring
         self.sr830.write('PAUS')            #Pause during a scan.
         self.sr830.write('SPTS?')           #Query the number of points stored in the Display buffer
         sleep(0.1)
         length = self.sr830.read()          #read the number of points stored in the Display buffer
-        readbuff_ch1 = 'TRCA? 1,0,'+ length #compose string command
-        self.sr830.write(readbuff_ch1)      #Query points from Display ch 1 buffer in ASCII floating point.
+        if channel == 'ch1':
+            readbuff = 'TRCA? 1,0,'+ length #compose string command for channel 1
+        elif channel == 'ch2':
+            readbuff = 'TRCA? 2,0,'+ length #compose string command for channel 2
+        self.sr830.write(readbuff)          #Query points from Display ch 1 buffer in ASCII floating point.
         sleep(0.1)
         y_result = self.sr830.read()        #Read points from Display ch 1 buffer in ASCII floating point.
         sleep(0.1)
@@ -120,14 +123,14 @@ class LIA_SR830():
 
         return buffer_mean
         
-    def measure_display(self, sample_number):        
+    def measure_display(self, channel, sample_number):        
         self.time_constant()
-        sample = 0                                           #initialize sample variable
-        for i in range(sample_number):
-            sample += float(self.sr830.query('OUTR? 1'))     #measure samples_number points
-        sample_mean = sample / (sample_number)               #compute the mean of the data
-
+        sample = []     
+        if channel == 'ch1':
+            sample = [float(self.sr830.query('OUTR? 1')) for i in range(sample_number)] #measure samples_number points
+        elif channel == 'ch2':
+            sample = [float(self.sr830.query('OUTR? 2')) for i in range(sample_number)] #measure samples_number points  
+     
+        sample_mean = np.mean(sample)               #compute the mean of the data
+        
         return sample_mean
-
-    def command(self):
-        self.sr830.query('OUTR? 1') 

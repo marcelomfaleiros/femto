@@ -25,7 +25,7 @@ class Worker(QThread):
         self.current_mm = self.smc.current_position()           #read current stage position          
         self.position_mm.emit(self.current_mm)
 
-    def run(self, mode = str):
+    def run(self):
         if self.channel == 'CH1 output':
             channel = 'ch1'
         elif self.channel == 'CH2 output':
@@ -39,8 +39,8 @@ class Worker(QThread):
                 break 
             dlay_array.append(target_delay)  
             self.move_stage_fs(target_delay)        
-            #lock-in
-            y = self.sr830.measure_buffer(self.sampling_time)
+            #lock-in measurement
+            y = self.sr830.measure_buffer(channel, self.sampling_time)
             #intensity_array.append(lock-in measurement)
             intnsity_array.append(y)
 
@@ -69,6 +69,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.is_zero_defined = False
 
         self.thread = Worker()
+
         #initializing line edit fields
         self.init_pos_lineEdit.setText("-5000")
         self.fin_pos_lineEdit.setText("20000")
@@ -118,11 +119,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.zero_delay_label.setText("Zero delay (mm): " + str(self.zero)) #display zero delay position
         self.current_fs_label.setText("Current (fs): 0")                  #display zero delay position
         self.is_zero_defined = True
-        return self.zero      
-
-    def move_stage_rel(self, step_fs):
-        self.thread.smc.move_rel_fs(step_fs)                                #move one step
-        current_mm = self.thread.smc.current_position()                     #read current stage position
+        return self.zero
 
     def move_stage_mm(self):
         target_position_mm = float(self.move_to_lineEdit.text())            #read target position from interface
@@ -153,7 +150,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         while True:
             if keyboard.is_pressed('Escape'):
                 break
-            y = self.thread.sr830.measure_display(20)
+            y = self.thread.sr830.measure_display('ch1', 10)
             y_array.append(y)
             x_array.append(x)
             point = (x_array, y_array)
