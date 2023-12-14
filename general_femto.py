@@ -26,6 +26,8 @@ class Worker(QThread):
         self.position_mm.emit(self.current_mm)
 
     def run(self):
+        self.mode = 'measure'
+
         if self.channel == 'CH1 output':
             channel = 'ch1'
         elif self.channel == 'CH2 output':
@@ -51,7 +53,6 @@ class Worker(QThread):
             self.signal.emit(self.point)
 
         self.data = delay_array, intensity_array
-        self.mode = 'measure'
     
         self.finished.emit()
 
@@ -143,6 +144,8 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
             self.current_fs_label.setText("Current (fs): Not defined")      #display current position in mm
 
     def intensity(self):
+        self.thread.mode = 'free run'
+
         x = 0
         y = 0
         x_array = []
@@ -157,7 +160,6 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
             self.plot(point)
             x += 1
         self.data = point
-        self.thread.mode = 'free run'
 
     def measure(self):
         #set interface elements as Worker thread elements
