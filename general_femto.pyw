@@ -133,6 +133,11 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.thread.smc.move_abs_fs(target_fs)
         current_mm = self.thread.smc.current_position()                     #read current stage position
         self.show_position(current_mm)
+    
+    def move_stage_rel(self, step):
+        self.thread.smc.move_rel_fs(step)
+        current_mm = self.thread.smc.current_position()                     #read current stage position
+        self.show_position(current_mm)
         
     def show_position(self, current_mm):                                    #move to target position in fs
         self.current_mm_label.setText("Current (mm): " + str(current_mm))   #display current position in mm
