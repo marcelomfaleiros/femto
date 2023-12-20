@@ -150,7 +150,6 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
 
     def intensity(self):
         self.thread.mode = 'free run'
-
         x = 0
         y = 0
         x_array = []
