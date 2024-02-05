@@ -120,8 +120,9 @@ class LIA_SR830():
             y_list[i] = float(y_list[i])    #format data into a float list
         self.sr830.write('REST')            #Reset the scan. All stored data is lost.
         buffer_mean = np.mean(y_list)       #compute the mean of the data
+        buffer_std = np.std(y_list)
 
-        return buffer_mean
+        return buffer_mean, buffer_std
         
     def measure_display(self, channel, sample_number):        
         self.time_constant()

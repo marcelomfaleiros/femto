@@ -34,6 +34,7 @@ class Worker(QThread):
             channel = 'ch2'
 
         intnsity_array = []
+        stdrd_array = []
         dlay_array = []
               
         for target_delay in range(self.init_pos, (self.fin_pos + self.step), self.step):
@@ -43,8 +44,11 @@ class Worker(QThread):
             self.move_stage_fs(target_delay)        
             #lock-in measurement
             y = self.sr830.measure_buffer(channel, self.sampling_time)
+            y_mean = y[0]
+            y_std = [1]
             #intensity_array.append(lock-in measurement)
-            intnsity_array.append(y)
+            intnsity_array.append(y[0])
+            stdrd_array.append(y[1])
 
             delay_array = np.array(dlay_array)
             intensity_array = np.array(intnsity_array)
@@ -52,7 +56,7 @@ class Worker(QThread):
              
             self.signal.emit(self.point)
 
-        self.data = delay_array, intensity_array
+        self.data = delay_array, intensity_array, stdrd_array
     
         self.finished.emit()
 
