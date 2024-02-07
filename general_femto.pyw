@@ -168,7 +168,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
             point = (x_array, y_array)
             self.plot(point)
             x += 1
-        self.data = point
+        self.data = x_array, y_array
 
     def measure(self):
         #set interface elements as Worker thread elements
