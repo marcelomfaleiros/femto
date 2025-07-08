@@ -19,11 +19,17 @@ class Worker(QThread):
     finished = pyqtSignal()
     position_mm = pyqtSignal(float)
 
-    def move_stage_fs(self, target_delay):                                     
-        target_fs = target_delay + self.zero/0.0003             #compute target delay position
-        self.smc.move_abs_fs(target_fs)                         #move to target position in fs
-        self.current_mm = self.smc.current_position()           #read current stage position          
-        self.position_mm.emit(self.current_mm)
+    def move_stage_fs(self, target_delay_fs):   
+        target_fs = int(round(target_delay_fs * 0.0003 * 20000))  
+        target_mm = target_fs + self.zero/0.0003                         #compute target delay position
+        if target_mm <= 4400000 or target_mm >= 0:          
+            self.thread.stage.move_absolute(target_mm)            
+            while True:
+                current_mm = self.thread.stage.status["position"]        #read current stage position
+                self.show_position(current_mm)     
+                qtw.QApplication.processEvents()        
+                if current_mm == target_mm:
+                    break        
 
     def run(self):
         self.mode = 'measure'
@@ -162,7 +168,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.thread.stage = BBD201(serial_port='COM7', home=False)  #set up thorlabs translation stage
         self.thread.stage.set_enabled(True)
         self.thread.stage.home()
-        self.zero = 'Delay zero not defined'
+        '''self.zero = 'Delay zero not defined'
         while True:            
             if self.thread.stage.status_[0][0]['homing'] == True:
                 initialize_pos = self.stage.status["position"]
@@ -170,7 +176,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
             elif self.thread.stage.status_[0][0]['homed'] == True:
                 initialize_pos = self.thread.stage.status["position"]
                 self.initialize_label.setText("Homed: position = " + str(initialize_pos))
-                break                
+                break'''                
         #initialize lock-in amplifier
         self.thread.sr830 = srs.LIA_SR830()
         self.thread.sr830.initialize()
@@ -188,45 +194,44 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
 
     def move_stage_mm(self):
         target_position_mm = float(self.move_to_lineEdit.text()) * 20000   #read target position from interface
-        target_position_mm = int(target_position_mm)
-        if target_position_mm <= 4400000 or target_position_mm >= 0:          
-            self.thread.stage.move_absolute(target_position_mm)    #move to target position in mm     
+        target_mm = int(target_position_mm)
+        if target_mm <= 4400000 or target_mm >= 0:          
+            self.thread.stage.move_absolute(target_mm)    #move to target position in mm     
             while True:  # show position label in real time
                 current_mm = self.thread.stage.status["position"]  #read current stage position 
-                if type(self.zero) == int:
-                    self.current_fs = int((current_mm - self.zero)/(20000*0.0003))
-                    self.arb_move_label.setText("Position = " + str(current_mm/20000) + " mm")                
-                    self.align_label.setText("Position = " + str(self.current_fs) + " fs")
-                    if current_mm == target_position_mm:
-                        break
-                else:
-                    self.current_fs = int(current_mm/(20000*0.0003))
-                    self.arb_move_label.setText("Position = " + str(current_mm/20000) + " mm")                
-                    self.align_label.setText("Delay zero not defined")
-                    if current_mm == target_position_mm:
-                        break
-                #qtw.QApplication.processEvents()    ?
-        self.show_position(current_mm) 
+                self.show_position(current_mm)
+                qtw.QApplication.processEvents()        #show the position in real time
+                if current_mm == target_mm:
+                    break                 
 
-    def move_stage_fs(self, target_delay):                                     
-        target_fs = target_delay + self.zero/0.0003                         #compute target delay position
-        self.thread.smc.move_abs_fs(target_fs)
-        current_mm = self.thread.smc.current_position()                     #read current stage position
-        self.show_position(current_mm)
-    
-    def move_stage_rel(self, step):
-        self.thread.smc.move_rel_fs(step)
-        current_mm = self.thread.smc.current_position()                     #read current stage position
-        self.show_position(current_mm)
+    def move_stage_fs(self, target_delay_fs):   
+        target_fs = int(round(target_delay_fs * 0.0003 * 20000))  
+        target_mm = target_fs + self.zero/0.0003                         #compute target delay position
+        if target_mm <= 4400000 or target_mm >= 0:          
+            self.thread.stage.move_absolute(target_mm)            
+            while True:
+                current_mm = self.thread.stage.status["position"]        #read current stage position
+                self.show_position(current_mm)     
+                qtw.QApplication.processEvents()        
+                if current_mm == target_mm:
+                    break                                        
         
-    def show_position(self, current_mm):                                    #move to target position in fs
+    def move_stage_rel(self, step_fs):
+        step = int(step_fs * 0.0003 * 20000)                     
+        if (int(self.thread.stage.status["position"]) + step) <= 4400000:          
+            self.thread.stage.move_relative(step)            
+            current_mm = self.thread.stage.status["position"]      #read current stage position
+            self.show_position(current_mm)
+            qtw.QApplication.processEvents()         
+        
+    def show_position(self, current_mm):                                    
         self.current_mm_label.setText("Current (mm): " + str(current_mm))   #display current position in mm
         if self.is_zero_defined ==  True:
-            current_fs = (current_mm - self.zero)/0.0003 
+            current_fs = int((current_mm - self.zero)/(20000*0.0003)) 
             self.current_fs_label.setText("Current (fs): " + str(round(current_fs, 1))) #display current position in mm
         elif self.is_zero_defined ==  False:
             self.zero_delay_label.setText("Zero delay (mm): Not defined")   #display zero delay position
-            self.current_fs_label.setText("Current (fs): Not defined")      #display current position in mm
+            self.current_fs_label.setText("Current (fs): Not defined")      #display current position in mm 
 
     def intensity(self):
         self.thread.mode = 'free run'
@@ -310,7 +315,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.graphicsView.clear()
 
     def exit(self):    
-        self.thread.smc.rs232_close()   
+        #close thorlabs communication   
         self.close()
 
 if __name__ == '__main__':
