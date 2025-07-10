@@ -389,10 +389,7 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         - Uses scientific notation for numeric values
         - Default file extension: .txt
         """
-        if self.thread.mode == 'measure':
-            raw_data = np.array(self.thread.data)
-        elif self.thread.mode == 'free run':
-            raw_data = np.array(self.data)
+        raw_data = np.array(self.thread.data if self.thread.mode == 'measure' else self.data)
         transposed_raw_data = np.vstack(raw_data)                      
         data = transposed_raw_data.transpose()
         file_spec = qtw.QFileDialog.getSaveFileName()[0]
