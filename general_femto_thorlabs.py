@@ -20,9 +20,9 @@ class Worker(QThread):
     position_mm = pyqtSignal(float)
 
     def move_stage_fs(self, target_delay_fs):   
-        target_fs = int(round(target_delay_fs * 0.0003 * 20000))  
+        target_fs = int(round(target_delay_fs * 6))                      # 6 = 0.0003 * 20000 
         target_mm = target_fs + self.zero/0.0003                         #compute target delay position
-        if target_mm <= 4400000 or target_mm >= 0:          
+        if 0 <= target_mm <= 4400000:          
             self.thread.stage.move_absolute(target_mm)            
             while True:
                 current_mm = self.thread.stage.status["position"]        #read current stage position
@@ -33,12 +33,7 @@ class Worker(QThread):
 
     def run(self):
         self.mode = 'measure'
-
-        if self.channel == 'CH1 output':
-            channel = 'ch1'
-        elif self.channel == 'CH2 output':
-            channel = 'ch2'
-
+        channel = 'ch1' if self.channel == 'CH1 output' else 'ch2'
         intnsity_array = []
         dlay_array = []
               
@@ -52,14 +47,10 @@ class Worker(QThread):
             #intensity_array.append(lock-in measurement)
             intnsity_array.append(y)
 
-            delay_array = np.array(dlay_array)
-            intensity_array = np.array(intnsity_array)
-            self.point = (delay_array, intensity_array)
-             
+            self.point = (np.array(dlay_array), np.array(intnsity_array))             
             self.signal.emit(self.point)
 
-        self.data = delay_array, intensity_array
-    
+        self.data = delay_array, intensity_array    
         self.finished.emit()
 
 class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
@@ -120,12 +111,9 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
     '''           
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.setObjectName("General Femto")
         self.setupUi(self)
-
         self.is_zero_defined = False
-
         self.thread = Worker()
 
         #initializing line edit fields
@@ -135,7 +123,6 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
         self.move_to_lineEdit.setText("0")
         self.delay_lineEdit.setText("0")
         self.sample_lineEdit.setText("1")
-
         self.comboBox.addItems(['CH1 output','CH2 output'])
         #defining action for the buttons
         self.init_pushButton.clicked.connect(self.initialization)
@@ -163,20 +150,9 @@ class GeneralFemto(qtw.QMainWindow, Ui_QMainWindow):
 
     def initialization(self):
         #initialize stage: it must be a thread item
-        '''before: self.thread.smc = smc100.SMC100CC()
-        self.thread.smc.initialize()'''
         self.thread.stage = BBD201(serial_port='COM7', home=False)  #set up thorlabs translation stage
         self.thread.stage.set_enabled(True)
-        self.thread.stage.home()
-        '''self.zero = 'Delay zero not defined'
-        while True:            
-            if self.thread.stage.status_[0][0]['homing'] == True:
-                initialize_pos = self.stage.status["position"]
-                self.thread.initialize_label.setText("Homing: position = " + str(initialize_pos))
-            elif self.thread.stage.status_[0][0]['homed'] == True:
-                initialize_pos = self.thread.stage.status["position"]
-                self.initialize_label.setText("Homed: position = " + str(initialize_pos))
-                break'''                
+        self.thread.stage.home()            
         #initialize lock-in amplifier
         self.thread.sr830 = srs.LIA_SR830()
         self.thread.sr830.initialize()
